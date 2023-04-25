@@ -1,20 +1,34 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import {
+    APIGatewayProxyEventV2WithRequestContext,
+    APIGatewayProxyResult,
+    APIGatewayEventRequestContextV2,
+} from 'aws-lambda';
 import express from 'express';
+
+import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
 
 const app = express();
 console.log('app from express:', app);
 
-/**
- *
- * Event doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
- * @param {Object} event - API Gateway Lambda Proxy Input Format
- *
- * Return doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html
- * @returns {Object} object - API Gateway Lambda Proxy Output Format
- *
- */
+const ddbClient = new DynamoDBClient({ region: process.env.AWS_REGION });
 
-export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+export const lambdaHandler = async (
+    event: APIGatewayProxyEventV2WithRequestContext<APIGatewayEventRequestContextV2>,
+): Promise<APIGatewayProxyResult> => {
+    console.log('event :', event.rawPath);
+
+    const writeCommand = new PutItemCommand({
+        TableName: process.env.SEARCH_CACHE_TABLE,
+        Item: { search: { S: event.rawPath }, result: { S: event.rawPath } },
+    });
+
+    try {
+        const data = await ddbClient.send(writeCommand);
+        console.log('data :', data);
+    } catch (err) {
+        console.log('err writing to Dynamo:', err);
+    }
+
     try {
         return {
             statusCode: 200,
