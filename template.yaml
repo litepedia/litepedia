@@ -30,6 +30,8 @@ Resources:
             TableName: !Ref DynamoDBSearchCache
         - DynamoDBWritePolicy:
             TableName: !Ref DynamoDBSearchCache
+        - SSMParameterReadPolicy:
+            ParameterName: !Ref OpenApiKey
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -49,6 +51,15 @@ Resources:
       KeySchema:
         - AttributeName: search
           KeyType: HASH
+  OpenApiKey:
+    Type: AWS::SSM::Parameter
+    Properties:
+      # After deployment, this needed updating to a secure string (can't do this in CloudFormation)
+      # https://blog.rowanudell.com/managing-secure-string-parameters-in-cloudformation/
+      Name: /litepedia/openai_api_key
+      Description: The API key for communicating with OpenAI
+      Type: String
+      Value: temp
 
 Outputs:
   # Find out more about other implicit resources you can reference within SAM
