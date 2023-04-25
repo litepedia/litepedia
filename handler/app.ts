@@ -7,6 +7,8 @@ import express from 'express';
 
 import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
 
+import { capitalizeFirstLetter } from './utils';
+
 const app = express();
 console.log('app from express:', app);
 
@@ -16,6 +18,8 @@ export const lambdaHandler = async (
     event: APIGatewayProxyEventV2WithRequestContext<APIGatewayEventRequestContextV2>,
 ): Promise<APIGatewayProxyResult> => {
     console.log('event :', event.rawPath);
+
+    console.log('test imports', capitalizeFirstLetter('hooray'));
 
     const writeCommand = new PutItemCommand({
         TableName: process.env.SEARCH_CACHE_TABLE,
