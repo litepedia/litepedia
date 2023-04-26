@@ -1,0 +1,5 @@
+{
+  "Parameters": {
+    "OPENAI_API_KEY_PARAM_NAME": "/litepedia/openai_api_key"
+  }
+}

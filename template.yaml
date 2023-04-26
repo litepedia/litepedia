@@ -25,6 +25,7 @@ Resources:
       Environment:
         Variables:
           SEARCH_CACHE_TABLE: !Ref DynamoDBSearchCache
+          OPENAI_API_KEY_PARAM_NAME: !Ref OpenApiKey
       Policies:
         - DynamoDBReadPolicy:
             TableName: !Ref DynamoDBSearchCache
