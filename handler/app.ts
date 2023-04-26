@@ -9,4 +9,4 @@ app.get('/wiki/:term', termWikiHandler);
 
 app.get('*', notFoundHandler);
 
-module.exports.lambdaHandler = serverless(app);
+export const lambdaHandler = serverless(app);
