@@ -1,26 +1,41 @@
 import { ChatCompletionRequestMessage, ChatCompletionResponseMessage, Configuration, OpenAIApi } from 'openai';
 import { getOpenAiApiKey } from './utils';
+import { logger } from './logger';
 
 const BASE_QUESTION =
-    process.env.GPT_QUESTION || 'explain to a first grader this paragraph in no longer than four sentences \n';
+    process.env.GPT_QUESTION || 'Explain to a first grader this paragraph in no longer than four sentences \n';
 
-const setupOpenApiClient = (): OpenAIApi => {
-    const configuration = new Configuration({ apiKey: getOpenAiApiKey() });
+// createChatCompletion API request errors if content is too long
+const TEXT_MAX_LENGTH = process.env.TEXT_MAX_LENGTH || 15000;
+
+const setupOpenApiClient = (apiKey: string): OpenAIApi => {
+    const configuration = new Configuration({ apiKey });
 
     return new OpenAIApi(configuration);
 };
 
-const openai = setupOpenApiClient();
+export const callGpt = async (text: string): Promise<ChatCompletionResponseMessage | undefined> => {
+    const apiKey = await getOpenAiApiKey();
+    // TODO: move this into parent scope
+    const openai = setupOpenApiClient(apiKey);
 
-export async function callGpt(text: string): Promise<ChatCompletionResponseMessage | undefined> {
-    const message: ChatCompletionRequestMessage = { role: 'user', content: `${BASE_QUESTION} ${text}` };
+    const message: ChatCompletionRequestMessage = {
+        role: 'user',
+        content: `${BASE_QUESTION}: ${text.substring(0, Number(TEXT_MAX_LENGTH))}`,
+    };
 
-    const response = await openai.createChatCompletion({
-        messages: [message],
-        model: process.env.GPT_MODEL || 'gpt-3.5-turbo',
-    });
+    try {
+        const response = await openai.createChatCompletion({
+            messages: [message],
+            model: process.env.GPT_MODEL || 'gpt-3.5-turbo',
+        });
 
-    const botMessage = response.data.choices[0].message;
+        const botMessage = response.data.choices[0].message;
 
-    return botMessage;
-}
+        logger.info(`Got ChatGPT response: ${botMessage}`);
+        return botMessage;
+    } catch (error) {
+        logger.error(`Failed to call GPT: ${error}`);
+        throw new Error('Failed to get text summary');
+    }
+};

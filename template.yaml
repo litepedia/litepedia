@@ -8,7 +8,7 @@ Description: >
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
-    Timeout: 5
+    Timeout: 60
 
     Tracing: Active
 Resources:
@@ -31,7 +31,7 @@ Resources:
             TableName: !Ref DynamoDBSearchCache
         - DynamoDBWritePolicy:
             TableName: !Ref DynamoDBSearchCache
-        - SSMParameterReadPolicy:
+        - SSMParameterWithSlashPrefixReadPolicy:
             ParameterName: !Ref OpenApiKey
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild

@@ -20,7 +20,7 @@ interface Page {
     pageid: number;
     ns: number;
     title: string;
-    extract: string;
+    extract?: string;
 }
 
 export async function fetchWikipediaContent(title: string): Promise<string> {
@@ -30,7 +30,7 @@ export async function fetchWikipediaContent(title: string): Promise<string> {
     // latest revision, main text content only,
     const url = `https://en.wikipedia.org/w/api.php?action=query&format=json&prop=extracts&titles=${title}&exlimit=1&explaintext=1&exsectionformat=plain`;
 
-    console.log(`fetching ${url}`);
+    logger.info(`Fetching ${url} from WikiPedia`);
 
     let response: AxiosResponse<WikiResponse> | null = null;
 
@@ -42,10 +42,14 @@ export async function fetchWikipediaContent(title: string): Promise<string> {
     }
 
     const pages = response.data.query.pages;
+
     const pageValues = Object.values(pages);
     const firstPage = pageValues[0];
 
-    console.log('Succesffuly retrieved wiki page content');
+    if (!firstPage.extract) {
+        logger.info(`WikiPedia page ${title} not found`);
+        throw new Error(`WikiPedia page ${title} not found`);
+    }
 
     return firstPage.extract;
 }

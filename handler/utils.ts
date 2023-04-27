@@ -1,4 +1,9 @@
-import { SSMClient, GetParametersCommand } from '@aws-sdk/client-ssm';
+import {
+    SSMClient,
+    GetParameterCommand,
+    GetParameterCommandInput,
+    GetParameterCommandOutput,
+} from '@aws-sdk/client-ssm';
 import { logger } from './logger';
 
 export function capitalizeFirstLetter(str: string): string {
@@ -8,18 +13,25 @@ export function capitalizeFirstLetter(str: string): string {
 const ssmClient = new SSMClient({ region: process.env.AWS_REGION });
 
 export const getOpenAiApiKey = async (): Promise<string> => {
-    console.log('process.env.OPENAI_API_KEY_PARAM_NAME: ', process.env.OPENAI_API_KEY_PARAM_NAME);
-    const input = {
-        Names: [process.env.OPENAI_API_KEY_PARAM_NAME ?? ''],
+    const input: GetParameterCommandInput = {
+        Name: process.env.OPENAI_API_KEY_PARAM_NAME,
         WithDecryption: true,
     };
-    const command = new GetParametersCommand(input);
-    const response = await ssmClient.send(command);
+    const command = new GetParameterCommand(input);
 
-    if (!response.Parameters || response.Parameters.length === 0) {
-        logger.error(`Failed to retrieve param ${process.env.OPENAI_API_KEY_PARAM_NAME}`);
+    let response: GetParameterCommandOutput | null = null;
+
+    try {
+        response = await ssmClient.send(command);
+    } catch (error) {
+        logger.error(`Failed to retrieve param ${process.env.OPENAI_API_KEY_PARAM_NAME}: ${error}`);
         throw new Error('Failed to retrieve OpenAI API key');
     }
 
-    return response.Parameters[0].Value ?? '';
+    if (!response.Parameter) {
+        logger.error(`No parameter found for ${process.env.OPENAI_API_KEY_PARAM_NAME}`);
+        throw new Error('Failed to retrieve OpenAI API key');
+    }
+
+    return response.Parameter.Value ?? '';
 };
