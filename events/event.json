@@ -1,7 +1,7 @@
 {
   "version": "2.0",
   "routeKey": "$default",
-  "rawPath": "/wiki/Bastille_Day",
+  "rawPath": "/wiki/Albert_Einstein",
   "rawQueryString": "foo=bar",
   "headers": {
     "x-amzn-tls-cipher-suite": "ECDHE-RSA-AES128-GCM-SHA256",
@@ -24,7 +24,7 @@
     "domainPrefix": "kkpr5yeai7tr3qhghvouhh5a3q0nxtyx",
     "http": {
       "method": "GET",
-      "path": "/wiki/Bastille_Day",
+      "path": "/wiki/Albert_Einstein",
       "protocol": "HTTP/1.1",
       "sourceIp": "2a00:23c6:9c25:6001:fd68:7cc5:fae4:63a7",
       "userAgent": "curl/7.87.0"
