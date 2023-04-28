@@ -1,5 +1,6 @@
 {
   "Parameters": {
-    "OPENAI_API_KEY_PARAM_NAME": "/litepedia/openai_api_key"
+    "OPENAI_API_KEY_PARAM_NAME": "/featurecaching/litepedia/openai_api_key",
+    "SEARCH_CACHE_TABLE": "litepedia-featurecaching-search-cache"
   }
 }

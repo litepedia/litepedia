@@ -15,6 +15,7 @@ Resources:
   Handler:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
+      FunctionName: !Sub litepedia-${AWS::StackName}-handler
       CodeUri: handler/
       Handler: app.lambdaHandler
       Runtime: nodejs18.x
@@ -41,23 +42,29 @@ Resources:
         Sourcemap: true
         EntryPoints:
           - app.ts
+  LambdaFunctionLogGroup:
+    Type: "AWS::Logs::LogGroup"
+    DependsOn: "Handler"
+    Properties:
+      RetentionInDays: 14
+      LogGroupName: !Sub "/aws/lambda/${Handler}"
   DynamoDBSearchCache:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub ${AWS::StackName}-search-cache
+      TableName: !Sub litepedia-${AWS::StackName}-search-cache
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
-        - AttributeName: search
+        - AttributeName: term
           AttributeType: S
       KeySchema:
-        - AttributeName: search
+        - AttributeName: term
           KeyType: HASH
   OpenApiKey:
     Type: AWS::SSM::Parameter
     Properties:
       # After deployment, this needed updating to a secure string (can't do this in CloudFormation)
       # https://blog.rowanudell.com/managing-secure-string-parameters-in-cloudformation/
-      Name: /litepedia/openai_api_key
+      Name: !Sub /${AWS::StackName}/litepedia/openai_api_key
       Description: The API key for communicating with OpenAI
       Type: String
       Value: temp

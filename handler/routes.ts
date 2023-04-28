@@ -2,10 +2,33 @@ import { Request, Response } from 'express';
 import { fetchWikipediaContent } from './wikiFetcher';
 import { callGpt } from './summariser';
 import { capitalizeFirstLetter } from './utils';
+import { SearchContent } from './models';
+import { getCachedContent, setCachedContent } from './cache';
+import { logger } from './logger';
 
 type TermParam = { term: string };
 
-export const termWikiHandler = async (req: Request<TermParam>, res: Response) => {
+type Error = {
+    message: string;
+};
+
+/**
+ * Format endpoint success response
+ * Used for both cached and uncached responses
+ * */
+const handleWikiSuccessResponse = (
+    searchContent: SearchContent,
+    res: Response<SearchContent>,
+): Response<SearchContent> => {
+    return res.json({
+        term: capitalizeFirstLetter(searchContent.term),
+        summary: searchContent?.summary ?? 'No summary found',
+        haiku: searchContent?.haiku ?? 'No haiku found',
+        rhyme: searchContent?.rhyme ?? 'No rhyme found',
+    });
+};
+
+export const termWikiHandler = async (req: Request<TermParam>, res: Response<SearchContent | Error>) => {
     const term = req.params.term;
 
     let wikiContent: string | null = null;
@@ -17,12 +40,18 @@ export const termWikiHandler = async (req: Request<TermParam>, res: Response) =>
         return;
     }
 
+    const cachedContent = await getCachedContent(term);
+
+    if (cachedContent) {
+        logger.info('Returning cached content for term:', term);
+        return handleWikiSuccessResponse(cachedContent, res);
+    }
+
     const gptResponse = await callGpt(wikiContent);
 
-    res.json({
-        title: capitalizeFirstLetter(term),
-        content: capitalizeFirstLetter(gptResponse?.content ?? 'No content found'),
-    });
+    await setCachedContent({ ...gptResponse, term });
+
+    return handleWikiSuccessResponse({ ...gptResponse, term }, res);
 };
 
 export const notFoundHandler = async (_: Request, res: Response) => {
