@@ -2,10 +2,15 @@ import { Request, Response } from 'express';
 import { fetchWikipediaContent } from './wikiFetcher';
 import { callGpt } from './summariser';
 import { capitalizeFirstLetter } from './utils';
+import { SearchContent } from './models';
 
 type TermParam = { term: string };
 
-export const termWikiHandler = async (req: Request<TermParam>, res: Response) => {
+type Error = {
+    message: string;
+};
+
+export const termWikiHandler = async (req: Request<TermParam>, res: Response<SearchContent | Error>) => {
     const term = req.params.term;
 
     let wikiContent: string | null = null;
@@ -20,8 +25,10 @@ export const termWikiHandler = async (req: Request<TermParam>, res: Response) =>
     const gptResponse = await callGpt(wikiContent);
 
     res.json({
-        title: capitalizeFirstLetter(term),
-        content: capitalizeFirstLetter(gptResponse?.content ?? 'No content found'),
+        term: capitalizeFirstLetter(term),
+        summary: gptResponse?.summary ?? 'No summary found',
+        haiku: gptResponse?.haiku ?? 'No haiku found',
+        rhyme: gptResponse?.rhyme ?? 'No rhyme found',
     });
 };
 
