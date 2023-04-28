@@ -42,6 +42,12 @@ Resources:
         Sourcemap: true
         EntryPoints:
           - app.ts
+  LambdaFunctionLogGroup:
+    Type: "AWS::Logs::LogGroup"
+    DependsOn: "Handler"
+    Properties:
+      RetentionInDays: 14
+      LogGroupName: !Sub "/aws/lambda/${Handler}"
   DynamoDBSearchCache:
     Type: AWS::DynamoDB::Table
     Properties:

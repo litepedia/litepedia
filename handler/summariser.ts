@@ -26,7 +26,7 @@ type QuestionResponse = {
     rhyme?: string;
 };
 
-export const callGpt = async (text: string): Promise<QuestionResponse | undefined> => {
+export const callGpt = async (text: string): Promise<QuestionResponse> => {
     const apiKey = await getOpenAiApiKey();
     // TODO: move this into parent scope
     const openai = setupOpenApiClient(apiKey);
