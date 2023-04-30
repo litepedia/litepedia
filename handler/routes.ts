@@ -12,23 +12,31 @@ type Error = {
     message: string;
 };
 
+const APP_TITLE = 'Litepedia';
+
 /**
  * Format endpoint success response
  * Used for both cached and uncached responses
  * */
-const handleWikiSuccessResponse = (
-    searchContent: SearchContent,
-    res: Response<SearchContent>,
-): Response<SearchContent> => {
-    return res.json({
-        term: capitalizeFirstLetter(searchContent.term),
+const handleWikiSuccessResponse = (searchContent: SearchContent, res: Response<SearchContent>): void => {
+    const term = capitalizeFirstLetter(searchContent.term);
+    res.render('result', {
+        title: term,
+        term,
         summary: searchContent?.summary ?? 'No summary found',
         haiku: searchContent?.haiku ?? 'No haiku found',
         rhyme: searchContent?.rhyme ?? 'No rhyme found',
     });
 };
 
-export const termWikiHandler = async (req: Request<TermParam>, res: Response<SearchContent | Error>) => {
+export const homeHandler = async (_: Request, res: Response) => {
+    res.render('home', {
+        title: APP_TITLE,
+        baseUrl: process.env.BASE_URL,
+    });
+};
+
+export const searchHandler = async (req: Request<TermParam>, res: Response<SearchContent | Error>) => {
     const term = req.params.term;
 
     let wikiContent: string | null = null;

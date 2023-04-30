@@ -24,7 +24,6 @@ interface Page {
 }
 
 export async function fetchWikipediaContent(title: string): Promise<string> {
-    // @ts-ignore
     title = title.replaceAll(' ', '_');
 
     // latest revision, main text content only,
