@@ -1,0 +1,70 @@
+<%- include('header.html') -%>
+
+<main class="center">
+    <h1>Search</h1>
+    <section id="search-container">
+        <input type="text" id="search-box" placeholder="Search Wikipedia..." />
+    </section>
+</main>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#search-box')
+            .autocomplete({
+                source: function (request, response) {
+                    $.ajax({
+                        url: 'https://en.wikipedia.org/w/api.php',
+                        dataType: 'jsonp',
+                        data: {
+                            action: 'query',
+                            format: 'json',
+                            generator: 'prefixsearch',
+                            prop: 'pageprops|pageimages|description',
+                            redirects: '',
+                            ppprop: 'displaytitle',
+                            piprop: 'thumbnail',
+                            pithumbsize: 120,
+                            pilimit: 6,
+                            gpssearch: request.term,
+                            gpsnamespace: 0,
+                            gpslimit: 6,
+                        },
+                        success: function (data) {
+                            const pages = data.query.pages;
+                            const suggestions = [];
+                            for (const pageId in pages) {
+                                const page = pages[pageId];
+                                suggestions.push({
+                                    label: page.title,
+                                    value: page.title,
+                                    description: page.description || '',
+                                });
+                            }
+                            response(suggestions);
+                        },
+                    });
+                },
+                minLength: 2,
+                select: function (event, ui) {
+                    const searchTerm = ui.item.value;
+                    const litepediaUrl = '<%= baseUrl %>' + encodeURIComponent(searchTerm);
+
+                    window.open(litepediaUrl, '_blank');
+                },
+                open: function () {
+                    $(this).removeClass('ui-corner-all').addClass('ui-corner-top');
+                },
+                close: function () {
+                    $(this).removeClass('ui-corner-top').addClass('ui-corner-all');
+                },
+            })
+            .data('ui-autocomplete')._renderItem = function (ul, item) {
+            return $('<li>')
+                .append('<div><strong>' + item.label + '</strong><br>' + item.description + '</div>')
+                .appendTo(ul);
+        };
+    });
+</script>
+
+<%- include('footer.html') -%>

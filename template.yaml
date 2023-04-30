@@ -27,6 +27,8 @@ Resources:
         Variables:
           SEARCH_CACHE_TABLE: !Ref DynamoDBSearchCache
           OPENAI_API_KEY_PARAM_NAME: !Ref OpenApiKey
+          # TODO: Cannot currently use dynamic value here to refer to Function URL as this is a circular dependency
+          BASE_URL: "https://kczvupkkw4ab7rd5meg4mzxady0eclxx.lambda-url.us-east-1.on.aws/wiki/"
       Policies:
         - DynamoDBReadPolicy:
             TableName: !Ref DynamoDBSearchCache
@@ -72,16 +74,11 @@ Resources:
 Outputs:
   # Find out more about other implicit resources you can reference within SAM
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  Handler:
-    Description: Handler Lambda Function ARN
-    Value: !GetAtt Handler.Arn
-  HandlerIamRole:
-    Description: Implicit IAM Role created for Handler function
-    Value: !GetAtt HandlerRole.Arn
   FunctionUrlEndpoint:
     Description: "Handler URL Endpoint"
     Value:
       Fn::GetAtt: HandlerUrl.FunctionUrl
-  DynamoDBSearchCache:
-    Description: "DynamoDBSearchCache"
-    Value: !GetAtt DynamoDBSearchCache.Arn
+  OpenAPIKeyParam:
+    Description: "OpenAI API Key Parameter"
+    Value:
+      Ref: OpenApiKey
