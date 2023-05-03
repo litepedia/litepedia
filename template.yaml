@@ -1,16 +1,22 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  litepedia
-
-  TODO
-
-# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+  litepedia infrastructure as code (IaC). See https://github.com/litepedia/litepedia#readme for more details.
 Globals:
   Function:
     Timeout: 60
 
     Tracing: Active
+Parameters:
+  domainName:
+    Type: String
+    Description: The domain name (eg. summariser.com, test.summariser.com)
+  hostedZoneName:
+    Type: String
+    Description: Your previously created Route53 hosted zone name (eg. summariser.com)
+  certificateArn:
+    Type: String
+    Description: Your previously created ACM certificate ARN
 Resources:
   Handler:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
@@ -27,8 +33,7 @@ Resources:
         Variables:
           SEARCH_CACHE_TABLE: !Ref DynamoDBSearchCache
           OPENAI_API_KEY_PARAM_NAME: !Ref OpenApiKey
-          # TODO: Cannot currently use dynamic value here to refer to Function URL as this is a circular dependency
-          BASE_URL: "https://kczvupkkw4ab7rd5meg4mzxady0eclxx.lambda-url.us-east-1.on.aws/wiki/"
+          BASE_URL: !Sub "https://${domainName}/wiki/"
       Policies:
         - DynamoDBReadPolicy:
             TableName: !Ref DynamoDBSearchCache
@@ -70,14 +75,75 @@ Resources:
       Description: The API key for communicating with OpenAI
       Type: String
       Value: temp
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    DependsOn:
+      - Handler
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        PriceClass: PriceClass_100
+        HttpVersion: http2
+        Comment: !Sub "litepedia API distribution for ${domainName}. Used to forward requests to Lambda function URL"
+        Origins:
+          - Id: ApiGateway
+            DomainName:
+              !Select [2, !Split ["/", !GetAtt HandlerUrl.FunctionUrl]]
+            OriginPath: ""
+            CustomOriginConfig:
+              HTTPPort: 80
+              HTTPSPort: 443
+              OriginProtocolPolicy: https-only
+              OriginSSLProtocols: [TLSv1, TLSv1.1, TLSv1.2]
+        DefaultCacheBehavior:
+          TargetOriginId: ApiGateway
+          ViewerProtocolPolicy: redirect-to-https
+          Compress: true
+          DefaultTTL: 0
+          AllowedMethods:
+            - HEAD
+            - DELETE
+            - POST
+            - GET
+            - OPTIONS
+            - PUT
+            - PATCH
+          CachedMethods:
+            - HEAD
+            - OPTIONS
+            - GET
+          ForwardedValues:
+            QueryString: false
+            Headers:
+              - Accept
+              - x-api-key
+              - Authorization
+            Cookies:
+              Forward: none
+        Aliases:
+          - !Ref domainName
+        ViewerCertificate:
+          SslSupportMethod: sni-only
+          MinimumProtocolVersion: TLSv1.2_2019
+          AcmCertificateArn: !Ref certificateArn
+  RecordSetGroup:
+    Type: AWS::Route53::RecordSetGroup
+    DependsOn:
+      - CloudFrontDistribution
+    Properties:
+      # Need to append extra ".". See `aws route53 list-hosted-zones-by-name`
+      HostedZoneName: !Sub "${hostedZoneName}."
+      RecordSets:
+        - Name: !Ref domainName
+          Type: A
+          AliasTarget:
+            HostedZoneId: Z2FDTNDATAQYW2 # Cloudfront default hosted zone ID
+            DNSName: { "Fn::GetAtt": [CloudFrontDistribution, DomainName] }
 
 Outputs:
-  # Find out more about other implicit resources you can reference within SAM
-  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  FunctionUrlEndpoint:
-    Description: "Handler URL Endpoint"
-    Value:
-      Fn::GetAtt: HandlerUrl.FunctionUrl
+  BaseUrl:
+    Description: "Base URL of your litepedia app"
+    Value: !Sub "https://${domainName}/"
   OpenAPIKeyParam:
     Description: "OpenAI API Key Parameter"
     Value:
