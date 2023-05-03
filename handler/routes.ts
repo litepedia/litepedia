@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { fetchWikipediaContent } from './wikiFetcher';
 import { callGpt } from './summariser';
-import { capitalizeFirstLetter } from './utils';
+import { formatSearchTerm } from './utils';
 import { SearchContent } from './models';
 import { getCachedContent, setCachedContent } from './cache';
 import { logger } from './logger';
@@ -19,7 +19,7 @@ const APP_TITLE = 'Litepedia';
  * Used for both cached and uncached responses
  * */
 const handleWikiSuccessResponse = (searchContent: SearchContent, res: Response<SearchContent>): void => {
-    const term = capitalizeFirstLetter(searchContent.term);
+    const term = formatSearchTerm(searchContent.term);
     res.render('result', {
         title: term,
         term,

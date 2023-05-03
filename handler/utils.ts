@@ -6,8 +6,11 @@ import {
 } from '@aws-sdk/client-ssm';
 import { logger } from './logger';
 
-export function capitalizeFirstLetter(str: string): string {
-    return str.charAt(0).toUpperCase() + str.slice(1);
+/**
+ * Capitalize first letter of a string and replace underscores with spaces
+ */
+export function formatSearchTerm(str: string): string {
+    return str.charAt(0).toUpperCase() + str.slice(1).replace(/_/g, ' ');
 }
 
 const ssmClient = new SSMClient({ region: process.env.AWS_REGION });
