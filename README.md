@@ -17,4 +17,8 @@ A little app to help you understand and have fun with even the most complicated 
 
 ## Developing
 
-1. After making changes, run `make deploy` to push your changes up to AWS. Unfortunately, `sam sync` does not work, as we have to manually copy over the `views` and `public` folders into the build directory.
+After making changes, run `make deploy` to push your changes up to AWS. Unfortunately, `sam sync` does not work, as we have to manually copy over the `views` and `public` folders into the build directory.
+
+### Frontend development
+
+See the `handler/local-dev` folder.
