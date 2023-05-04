@@ -122,6 +122,7 @@ Resources:
               Forward: none
         Aliases:
           - !Ref domainName
+          - !Sub "www.${domainName}"
         ViewerCertificate:
           SslSupportMethod: sni-only
           MinimumProtocolVersion: TLSv1.2_2019
@@ -139,11 +140,16 @@ Resources:
           AliasTarget:
             HostedZoneId: Z2FDTNDATAQYW2 # Cloudfront default hosted zone ID
             DNSName: { "Fn::GetAtt": [CloudFrontDistribution, DomainName] }
+        - Name: !Sub "www.${domainName}"
+          Type: A
+          AliasTarget:
+            HostedZoneId: Z2FDTNDATAQYW2 # Cloudfront default hosted zone ID
+            DNSName: { "Fn::GetAtt": [CloudFrontDistribution, DomainName] }
 
 Outputs:
   BaseUrl:
     Description: "Base URL of your litepedia app"
-    Value: !Sub "https://${domainName}/"
+    Value: !Sub "https://www.${domainName}/"
   OpenAPIKeyParam:
     Description: "OpenAI API Key Parameter"
     Value:
