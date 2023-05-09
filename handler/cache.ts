@@ -1,5 +1,5 @@
 import { DynamoDBClient, PutItemCommand, GetItemCommand } from '@aws-sdk/client-dynamodb';
-import { unmarshall } from '@aws-sdk/util-dynamodb';
+import { unmarshall, marshall } from '@aws-sdk/util-dynamodb';
 import { logger } from './logger';
 import { SearchContent } from './models';
 
@@ -20,7 +20,7 @@ export const getCachedContent = async (term: string): Promise<SearchContent | nu
 
         return unmarshall(data.Item) as SearchContent;
     } catch (err) {
-        logger.error('Error retriving cached search term:', err);
+        logger.error(`Error retriving cached search term: ${err}`);
         return null;
     }
 };
@@ -28,18 +28,13 @@ export const getCachedContent = async (term: string): Promise<SearchContent | nu
 export const setCachedContent = async (values: SearchContent): Promise<void> => {
     const writeCommand = new PutItemCommand({
         TableName: process.env.SEARCH_CACHE_TABLE,
-        Item: {
-            term: { S: values.term },
-            summary: values.summary ? { S: values.summary } : { NULL: true },
-            haiku: values.haiku ? { S: values.haiku } : { NULL: true },
-            rhyme: values.rhyme ? { S: values.rhyme } : { NULL: true },
-        },
+        Item: marshall(values),
     });
 
     try {
         const data = await ddbClient.send(writeCommand);
-        logger.info('Wrote cached search term row:', data);
+        logger.info(`Wrote cached search term row: ${data}`);
     } catch (err) {
-        logger.error('Error writing cached search term:', err);
+        logger.error(`Error writing cached search term: ${err}`);
     }
 };

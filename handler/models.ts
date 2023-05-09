@@ -1,6 +1,14 @@
 export type SearchContent = {
     term: string;
-    summary?: string;
-    haiku?: string;
-    rhyme?: string;
+} & SearchAnswer;
+
+export type SearchAnswer = {
+    summary: string;
+    haiku: string;
+    rhyme: string;
+};
+
+export type WikiContent = {
+    article: string;
+    links: string[];
 };

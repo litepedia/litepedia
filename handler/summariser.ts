@@ -1,9 +1,12 @@
 import { ChatCompletionRequestMessage, Configuration, OpenAIApi } from 'openai';
 import { getOpenAiApiKey } from './utils';
 import { logger } from './logger';
+import { SearchAnswer, WikiContent } from './models';
+
+import { load } from 'cheerio';
 
 const BASE_SUMMARY_PROMPT =
-    process.env.GPT_SUMMARY_PROMPT || 'Explain to a first grader this paragraph in no longer than four sentences: \n';
+    process.env.GPT_SUMMARY_PROMPT || 'Explain to a first grader this text in no longer than four sentences: \n';
 
 const BASE_HAIKU_PROMPT = process.env.GPT_HAIKU_PROMPT || 'Give me a Haiku for the following text: \n';
 
@@ -20,18 +23,28 @@ const setupOpenApiClient = (apiKey: string): OpenAIApi => {
     return new OpenAIApi(configuration);
 };
 
-type QuestionResponse = {
-    summary?: string;
-    haiku?: string;
-    rhyme?: string;
+/**
+ * Add related links from the Wikipedia article to the summary
+ */
+const addRelatedLinks = (summary: string, links: string[]): string => {
+    const $ = load(summary);
+    const html = $('body').html();
+
+    if (!html) {
+        return summary;
+    }
+
+    return links.reduce((html, link) => {
+        return html.replace(new RegExp(`\\b${link}\\b`, 'g'), `<a href="${process.env.BASE_URL}${link}">${link}</a>`);
+    }, html);
 };
 
-export const callGpt = async (text: string): Promise<QuestionResponse> => {
+export const callGpt = async (wikiContent: WikiContent): Promise<SearchAnswer> => {
     const apiKey = await getOpenAiApiKey();
     // TODO: move this into parent scope
     const openai = setupOpenApiClient(apiKey);
 
-    const trunactedText = text.substring(0, Number(TEXT_MAX_LENGTH));
+    const trunactedText = wikiContent.article.substring(0, Number(TEXT_MAX_LENGTH));
 
     const summaryMessage: ChatCompletionRequestMessage = {
         role: 'user',
@@ -72,10 +85,15 @@ export const callGpt = async (text: string): Promise<QuestionResponse> => {
 
         logger.info(`GPT summary: ${summary}. GPT haiku: ${haiku}. GPT rhyme: ${rhyme}`);
 
+        const summaryWithRelatedLinks = summary ? addRelatedLinks(summary, wikiContent.links) : 'No summary found';
+
+        logger.info(`Added related Wikipedia links to summary: "${summaryWithRelatedLinks}"`);
+
         return {
-            summary,
-            haiku,
-            rhyme,
+            summary: summaryWithRelatedLinks,
+            // encode string to preserve new line characters
+            haiku: haiku ? encodeURIComponent(haiku) : 'No haiku found',
+            rhyme: rhyme ? encodeURIComponent(rhyme) : 'No rhyme found',
         };
     } catch (error) {
         logger.error(`Failed to call GPT: ${error}`);
