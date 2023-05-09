@@ -48,7 +48,9 @@
                 minLength: 2,
                 select: function (event, ui) {
                     const searchTerm = ui.item.value;
-                    const litepediaUrl = '<%= baseUrl %>' + encodeURIComponent(searchTerm);
+                    // replace spaces with underscores to prevent %20 in URL (eg. Charles III -> Charles%20III)
+                    const formattedSearchTerm = searchTerm.replaceAll(' ', '_');
+                    const litepediaUrl = '<%= baseUrl %>' + encodeURIComponent(formattedSearchTerm);
 
                     window.open(litepediaUrl, '_blank');
                 },

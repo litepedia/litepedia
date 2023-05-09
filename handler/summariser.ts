@@ -1,9 +1,10 @@
 import { ChatCompletionRequestMessage, Configuration, OpenAIApi } from 'openai';
 import { getOpenAiApiKey } from './utils';
 import { logger } from './logger';
+import { SearchAnswer } from './models';
 
 const BASE_SUMMARY_PROMPT =
-    process.env.GPT_SUMMARY_PROMPT || 'Explain to a first grader this paragraph in no longer than four sentences: \n';
+    process.env.GPT_SUMMARY_PROMPT || 'Explain to a first grader this text in no longer than four sentences: \n';
 
 const BASE_HAIKU_PROMPT = process.env.GPT_HAIKU_PROMPT || 'Give me a Haiku for the following text: \n';
 
@@ -20,13 +21,7 @@ const setupOpenApiClient = (apiKey: string): OpenAIApi => {
     return new OpenAIApi(configuration);
 };
 
-type QuestionResponse = {
-    summary?: string;
-    haiku?: string;
-    rhyme?: string;
-};
-
-export const callGpt = async (text: string): Promise<QuestionResponse> => {
+export const callGpt = async (text: string): Promise<SearchAnswer> => {
     const apiKey = await getOpenAiApiKey();
     // TODO: move this into parent scope
     const openai = setupOpenApiClient(apiKey);
@@ -73,9 +68,10 @@ export const callGpt = async (text: string): Promise<QuestionResponse> => {
         logger.info(`GPT summary: ${summary}. GPT haiku: ${haiku}. GPT rhyme: ${rhyme}`);
 
         return {
-            summary,
-            haiku,
-            rhyme,
+            // encode string to preserve new line characters
+            summary: summary ? encodeURIComponent(summary) : 'No summary found',
+            haiku: haiku ? encodeURIComponent(haiku) : 'No haiku found',
+            rhyme: rhyme ? encodeURIComponent(rhyme) : 'No rhyme found',
         };
     } catch (error) {
         logger.error(`Failed to call GPT: ${error}`);

@@ -23,9 +23,10 @@ const handleWikiSuccessResponse = (searchContent: SearchContent, res: Response<S
     res.render('result', {
         title: term,
         term,
-        summary: searchContent?.summary ?? 'No summary found',
-        haiku: searchContent?.haiku ?? 'No haiku found',
-        rhyme: searchContent?.rhyme ?? 'No rhyme found',
+        // replace newlines with <br> tags
+        summary: decodeURIComponent(searchContent.summary).replace(/(?:\r\n|\r|\n)/g, '<br>'),
+        haiku: decodeURIComponent(searchContent.haiku).replace(/(?:\r\n|\r|\n)/g, '<br>'),
+        rhyme: decodeURIComponent(searchContent.rhyme).replace(/(?:\r\n|\r|\n)/g, '<br>'),
     });
 };
 
@@ -51,7 +52,7 @@ export const searchHandler = async (req: Request<TermParam>, res: Response<Searc
     const cachedContent = await getCachedContent(term);
 
     if (cachedContent) {
-        logger.info('Returning cached content for term:', term);
+        logger.info(`Returning cached content for term "${term}"`);
         return handleWikiSuccessResponse(cachedContent, res);
     }
 
