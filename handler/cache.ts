@@ -20,7 +20,7 @@ export const getCachedContent = async (term: string): Promise<SearchContent | nu
 
         return unmarshall(data.Item) as SearchContent;
     } catch (err) {
-        logger.error('Error retriving cached search term:', err);
+        logger.error(`Error retriving cached search term: ${err}`);
         return null;
     }
 };
@@ -33,8 +33,8 @@ export const setCachedContent = async (values: SearchContent): Promise<void> => 
 
     try {
         const data = await ddbClient.send(writeCommand);
-        logger.info('Wrote cached search term row:', data);
+        logger.info(`Wrote cached search term row: ${data}`);
     } catch (err) {
-        logger.error('Error writing cached search term:', err);
+        logger.error(`Error writing cached search term: ${err}`);
     }
 };

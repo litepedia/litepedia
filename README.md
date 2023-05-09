@@ -1,6 +1,6 @@
 # litepedia
 
-A little app to help you understand and have fun with even the most complicated WikiPedia articles!
+A little app to help you understand and have fun with even the most complicated Wikipedia articles!
 
 ## Prerequisites
 

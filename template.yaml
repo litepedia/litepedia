@@ -4,8 +4,8 @@ Description: >
   litepedia infrastructure as code (IaC). See https://github.com/litepedia/litepedia#readme for more details.
 Globals:
   Function:
-    Timeout: 60
-
+    Timeout: 30
+    MemorySize: 512
     Tracing: Active
 Parameters:
   domainName:

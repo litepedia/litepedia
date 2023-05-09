@@ -52,7 +52,7 @@
                     const formattedSearchTerm = searchTerm.replaceAll(' ', '_');
                     const litepediaUrl = '<%= baseUrl %>' + encodeURIComponent(formattedSearchTerm);
 
-                    window.open(litepediaUrl, '_blank');
+                    window.open(litepediaUrl, '_self');
                 },
                 open: function () {
                     $(this).removeClass('ui-corner-all').addClass('ui-corner-top');

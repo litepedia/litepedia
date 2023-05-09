@@ -7,3 +7,8 @@ export type SearchAnswer = {
     haiku: string;
     rhyme: string;
 };
+
+export type WikiContent = {
+    article: string;
+    links: string[];
+};
