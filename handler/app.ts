@@ -4,6 +4,7 @@ import serverless from 'serverless-http';
 import { notFoundHandler, searchHandler, homeHandler } from './routes';
 
 import path from 'path';
+import { replaceEncodedSpaces } from './middlewares';
 
 const app = express();
 
@@ -14,6 +15,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'html');
 
 app.get('/', homeHandler);
+
+app.use(replaceEncodedSpaces);
 
 app.get('/wiki/:term', searchHandler);
 
