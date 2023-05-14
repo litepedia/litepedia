@@ -1,5 +1,6 @@
 export type SearchContent = {
     term: string;
+    imageUrl?: string;
 } & SearchAnswer;
 
 export type SearchAnswer = {
@@ -11,4 +12,6 @@ export type SearchAnswer = {
 export type WikiContent = {
     article: string;
     links: string[];
+    // Not all articles have images
+    imageUrl?: string;
 };

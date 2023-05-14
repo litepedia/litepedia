@@ -6,6 +6,7 @@ import { SearchContent, WikiContent } from './models';
 import { getCachedContent, setCachedContent } from './cache';
 import { logger } from './logger';
 import { APP_TITLE } from './constants';
+import { MultipleResultsError, WikipediaError, NoResultsError } from './errors';
 
 type TermParam = { term: string };
 
@@ -26,6 +27,7 @@ const handleWikiSuccessResponse = (searchContent: SearchContent, res: Response<S
         // replace newlines with <br> tags
         haiku: decodeURIComponent(searchContent.haiku).replace(/(?:\r\n|\r|\n)/g, '<br>'),
         rhyme: decodeURIComponent(searchContent.rhyme).replace(/(?:\r\n|\r|\n)/g, '<br>'),
+        imageUrl: searchContent.imageUrl,
     });
 };
 
@@ -43,9 +45,25 @@ export const searchHandler = async (req: Request<TermParam>, res: Response<Searc
 
     try {
         wikiContent = await fetchWikipediaContent(term);
-    } catch {
-        res.status(404).json({ message: `No Wikipedia page found for ${term}` });
-        return;
+    } catch (err) {
+        if (err instanceof WikipediaError) {
+            res.status(500).json({ message: err.message });
+            return;
+        }
+
+        if (err instanceof MultipleResultsError) {
+            res.status(400).json({ message: err.message });
+            return;
+        }
+
+        if (err instanceof NoResultsError) {
+            res.status(404).json({ message: err.message });
+            return;
+        } else {
+            logger.error('Unexpected error fetching Wikipedia content');
+            res.status(500).json({ message: 'Something went wrong. Please try again later' });
+            return;
+        }
     }
 
     const cachedContent = await getCachedContent(term);
@@ -57,9 +75,11 @@ export const searchHandler = async (req: Request<TermParam>, res: Response<Searc
 
     const gptResponse = await callGpt(wikiContent);
 
-    await setCachedContent({ ...gptResponse, term });
+    const searchContent = { ...gptResponse, term, imageUrl: wikiContent.imageUrl };
 
-    return handleWikiSuccessResponse({ ...gptResponse, term }, res);
+    await setCachedContent(searchContent);
+
+    return handleWikiSuccessResponse(searchContent, res);
 };
 
 export const notFoundHandler = async (_: Request, res: Response) => {
