@@ -28,7 +28,7 @@ export const getCachedContent = async (term: string): Promise<SearchContent | nu
 export const setCachedContent = async (values: SearchContent): Promise<void> => {
     const writeCommand = new PutItemCommand({
         TableName: process.env.SEARCH_CACHE_TABLE,
-        Item: marshall(values),
+        Item: marshall(values, { removeUndefinedValues: true }),
     });
 
     try {
