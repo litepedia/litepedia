@@ -32,8 +32,8 @@ export const setCachedContent = async (values: SearchContent): Promise<void> => 
     });
 
     try {
-        const data = await ddbClient.send(writeCommand);
-        logger.info(`Wrote cached search term row: ${data}`);
+        await ddbClient.send(writeCommand);
+        logger.info(`Wrote cached search term row for "${values.term}"`);
     } catch (err) {
         logger.error(`Error writing cached search term: ${err}`);
     }
