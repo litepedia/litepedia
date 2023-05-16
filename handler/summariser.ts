@@ -23,6 +23,11 @@ const setupOpenApiClient = (apiKey: string): OpenAIApi => {
     return new OpenAIApi(configuration);
 };
 
+/** Remove special characters that have meaning in regexes */
+const escapeRegExp = (str: string): string => {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+};
+
 /**
  * Add related links from the Wikipedia article to the summary
  */
@@ -35,7 +40,11 @@ const addRelatedLinks = (summary: string, links: string[]): string => {
     }
 
     return links.reduce((html, link) => {
-        return html.replace(new RegExp(`\\b${link}\\b`, 'g'), `<a href="${process.env.BASE_URL}${link}">${link}</a>`);
+        const escapedLink = escapeRegExp(link);
+        return html.replace(
+            new RegExp(`\\b${escapedLink}\\b`, 'g'),
+            `<a href="${process.env.BASE_URL}${link}">${link}</a>`,
+        );
     }, html);
 };
 
