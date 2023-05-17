@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { fetchWikipediaContent } from './wikiFetcher';
+import { fetchWikipediaContent } from './wikiHandler';
 import { callGpt } from './summariser';
 import { formatSearchTerm } from './utils';
 import { SearchContent, WikiContent } from './models';
@@ -22,12 +22,14 @@ const handleWikiSuccessResponse = (searchContent: SearchContent, res: Response<S
     const term = formatSearchTerm(searchContent.term);
     res.render('result', {
         title: term,
+        baseUrl: process.env.BASE_URL,
         term,
         summary: searchContent.summary,
         // replace newlines with <br> tags
         haiku: decodeURIComponent(searchContent.haiku).replace(/(?:\r\n|\r|\n)/g, '<br>'),
         rhyme: decodeURIComponent(searchContent.rhyme).replace(/(?:\r\n|\r|\n)/g, '<br>'),
         imageUrl: searchContent.imageUrl,
+        relatedLinks: searchContent.relatedLinks,
     });
 };
 
@@ -75,7 +77,12 @@ export const searchHandler = async (req: Request<TermParam>, res: Response<Searc
 
     const gptResponse = await callGpt(wikiContent);
 
-    const searchContent = { ...gptResponse, term, imageUrl: wikiContent.imageUrl };
+    const searchContent: SearchContent = {
+        ...gptResponse,
+        term,
+        imageUrl: wikiContent.imageUrl,
+        relatedLinks: wikiContent.relatedLinks,
+    };
 
     await setCachedContent(searchContent);
 

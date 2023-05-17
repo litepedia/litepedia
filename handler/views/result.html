@@ -20,6 +20,19 @@
             <h2>Rhyme</h2>
             <p><%- rhyme %></p>
         </article>
+        <% if (relatedLinks.length > 0) { %>
+        <article>
+            <h2>See also</h2>
+            <i>Here are some ideas about what to read next...</i>
+            <ul>
+                <% for (let i = 0; i < relatedLinks.length; i++) { %>
+                <li>
+                    <a href="<%= baseUrl %><%= relatedLinks[i] %>"><%= relatedLinks[i] %></a>
+                </li>
+                <% } %>
+            </ul>
+        </article>
+        <% } %>
     </section>
 </main>
 
