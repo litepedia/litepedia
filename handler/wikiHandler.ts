@@ -32,7 +32,7 @@ interface Page {
     original?: Original;
 }
 
-export interface Original {
+interface Original {
     source: string;
     width: number;
     height: number;
@@ -90,6 +90,17 @@ const selectRandomLinks = (possibleLinks: string[]): string[] => {
     return shuffledLinks.slice(0, Number(NUMBER_OF_RELATED_LINKS));
 };
 
+/** Only preserve image format URLs. Do not currently want to handle video formats such as `.webm`, `.mp4` */
+const filterImageFormat = (imageUrl?: string): string | undefined => {
+    if (!imageUrl) {
+        return undefined;
+    }
+
+    if (['.jpg', '.jpeg', '.png', '.gif', '.svg'].some((format) => imageUrl.endsWith(format))) {
+        return imageUrl;
+    }
+};
+
 export const fetchWikipediaContent = async (title: string): Promise<WikiContent> => {
     // latest revision, text content, internal links and page image (if available)
     const mainArticleUrl = `https://en.wikipedia.org/w/api.php?action=query&format=json&prop=extracts|links|pageimages&titles=${title}&exlimit=1&explaintext=1&exsectionformat=plain&pllimit=max&piprop=original`;
@@ -115,7 +126,7 @@ export const fetchWikipediaContent = async (title: string): Promise<WikiContent>
     return {
         article: mainArticle.extract,
         links: extractLinks(mainArticle.links),
-        imageUrl: mainArticle.original?.source,
+        imageUrl: filterImageFormat(mainArticle.original?.source),
         relatedLinks: randomRelatedLinksSubset,
     };
 };
