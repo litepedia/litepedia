@@ -1,15 +1,15 @@
 <%- include('header.html') -%>
 
-<main class="center">
-    <section>
-        <h1><%- term %></h1>
+<main class="result--container">
+    <section class="result--header">
+        <h1 class="result--title"><%- term %></h1>
+        <div id="result--site-sub">From Litepedia, the free encyclopedia</div>
         <% if (imageUrl) { %>
-        <img src="<%- imageUrl %>" alt="<%- term %>" style="height: 100px" />
+        <img src="<%- imageUrl %>" alt="<%- term %>" class="result--image" />
         <% } %>
     </section>
-    <section>
+    <section class="result--content">
         <article>
-            <h2>Summary</h2>
             <p><%- summary %></p>
         </article>
         <article>
@@ -23,17 +23,25 @@
         <% if (relatedLinks.length > 0) { %>
         <article>
             <h2>See also</h2>
-            <i>Here are some ideas about what to read next...</i>
             <ul>
                 <% for (let i = 0; i < relatedLinks.length; i++) { %>
                 <li>
-                    <a href="<%= baseUrl %><%= relatedLinks[i] %>"><%= relatedLinks[i] %></a>
+                    <a href="<%= baseUrl %><%= relatedLinks[i] %>" onclick="showSpinner()"><%= relatedLinks[i] %></a>
                 </li>
                 <% } %>
             </ul>
         </article>
         <% } %>
     </section>
+    <div class="loading-spinner"></div>
 </main>
+
+<script>
+    function showSpinner() {
+        console.log('Searching...');
+        const spinner = document.getElementsByClassName('loading-spinner');
+        document.querySelector('.loading-spinner').style.display = 'grid';
+    }
+</script>
 
 <%- include('footer.html') -%>

@@ -1,16 +1,33 @@
 <%- include('header.html') -%>
 
-<main class="center">
-    <h1>Search</h1>
-    <section id="search-container">
-        <input type="text" id="search-box" placeholder="Search Wikipedia..." />
+<main class="home--container">
+    <h1 class="home--title">LITEPEDIA</h1>
+    <strong>The Free Encyclopedia</strong>
+    <div>
+        <img
+            class="home--logo"
+            src="https://upload.wikimedia.org/wikipedia/en/8/80/Wikipedia-logo-v2.svg"
+            alt="Wikipedia"
+        />
+        <div class="loading-spinner"></div>
+    </div>
+    <section class="home--search-container">
+        <input type="text" class="home--search-box" autofocus />
     </section>
 </main>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 <script>
+    function showLoadingSpinner() {
+        document.querySelector('.loading-spinner').style.display = 'grid';
+    }
+
+    function hideLoadingSpinner() {
+        document.querySelector('.loading-spinner').style.display = 'none';
+    }
+
     $(document).ready(function () {
-        $('#search-box')
+        $('.home--search-box')
             .autocomplete({
                 source: function (request, response) {
                     $.ajax({
@@ -48,11 +65,23 @@
                 minLength: 2,
                 select: function (event, ui) {
                     const searchTerm = ui.item.value;
-                    // replace spaces with underscores to prevent %20 in URL (eg. Charles III -> Charles%20III)
                     const formattedSearchTerm = searchTerm.replaceAll(' ', '_');
                     const litepediaUrl = '<%= baseUrl %>' + encodeURIComponent(formattedSearchTerm);
 
-                    window.open(litepediaUrl, '_self');
+                    showLoadingSpinner();
+
+                    console.log('Searching...');
+
+                    fetch(litepediaUrl)
+                        .then(function (response) {
+                            window.open(litepediaUrl, '_self');
+                        })
+                        .catch(function (error) {
+                            console.error('An error occurred: ', error);
+                        })
+                        .finally(function () {
+                            hideLoadingSpinner();
+                        });
                 },
                 open: function () {
                     $(this).removeClass('ui-corner-all').addClass('ui-corner-top');

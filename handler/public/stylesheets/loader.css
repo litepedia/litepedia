@@ -1,0 +1,34 @@
+.loading-spinner {
+  display: none;
+  position: absolute;
+  width: 50vw;
+  height: 50vw;
+  animation: spinner-plncf9 4s infinite;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.5;
+}
+
+.loading-spinner::before,
+.loading-spinner::after {
+  content: "";
+  grid-area: 1/1;
+  border: 24.1px solid;
+  border-radius: 50%;
+  border-color: #36c #36c #0000 #0000;
+  mix-blend-mode: darken;
+  animation: loading-spinner-plncf9 1s infinite linear;
+}
+
+.loading-spinner::after {
+  border-color: #0000 #0000 #dbdcef #dbdcef;
+  animation-direction: reverse;
+}
+
+@keyframes loading-spinner-plncf9 {
+  100% {
+     transform: rotate(1turn);
+  }
+}
+
