@@ -5,7 +5,7 @@ Description: >
 Globals:
   Function:
     Timeout: 30
-    MemorySize: 512
+    MemorySize: 1024
     Tracing: Active
 Parameters:
   domainName:
@@ -149,7 +149,7 @@ Resources:
 Outputs:
   BaseUrl:
     Description: "Base URL of your litepedia app"
-    Value: !Sub "https://www.${domainName}/"
+    Value: !Sub "https://${domainName}/"
   OpenAPIKeyParam:
     Description: "OpenAI API Key Parameter"
     Value:
