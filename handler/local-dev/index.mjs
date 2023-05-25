@@ -17,6 +17,13 @@ app.set('views', path.join(__dirname, '../', 'views'));
 app.use(express.static(path.join(__dirname, '../', 'public')));
 app.set('view engine', 'html');
 
+app.get('/', async (_, res) => {
+  res.render('home', {
+    title: 'HOME',
+    baseUrl: "test.com/wiki/",
+  });
+});
+
 app.get('/wiki/Albert_Einstein', async (_, res) => {
   const searchTerm = 'Albert Einstein';
   res.render('result', {
@@ -36,5 +43,5 @@ app.get('/wiki/Albert_Einstein', async (_, res) => {
 
 app.listen(port, () => {
   console.log(`Local dev app listening on port ${port}`);
-  console.log(`Click "http://localhost:${port}/wiki/Albert_Einstein" to open in your browser`)
+  console.log(`Click "http://localhost:${port}" or "http://localhost:${port}/wiki/Albert_Einstein" to open in your browser`)
 });
