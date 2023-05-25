@@ -5,7 +5,7 @@ Description: >
 Globals:
   Function:
     Timeout: 30
-    MemorySize: 1024
+    MemorySize: 2048
     Tracing: Active
 Parameters:
   domainName:
